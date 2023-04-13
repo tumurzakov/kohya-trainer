@@ -572,7 +572,7 @@ def train(args):
 
                 # Convert mask to latent space
                 mask = vae.encode(
-                    batch["mask"].reshape(batch["images"].shape).to(dtype=weight_dtype)
+                    batch["masks"].reshape(batch["images"].shape).to(dtype=weight_dtype)
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
