@@ -1003,7 +1003,6 @@ class BaseDataset(torch.utils.data.Dataset):
 
                 latents = None
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
-                pil_image = img
 
             images.append(image)
             latents_list.append(latents)
@@ -1042,6 +1041,10 @@ class BaseDataset(torch.utils.data.Dataset):
         else:
             images = None
         example["images"] = images
+
+        pil_image = Image.open(image_info.absolute_path)
+        if not pil_image.mode == "RGB":
+            instance_image = pil_image.convert("RGB")
         example["PIL_images"] = pil_image
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
@@ -3320,7 +3323,7 @@ class collater_inpaint_class:
         for example in examples:
             pil_image = example["PIL_images"]
             # generate a random mask
-            mask = random_mask(pil_image.shape[0:2], 1, False)
+            mask = random_mask(pil_image.size, 1, False)
             # apply transforms
             mask = image_transforms(mask)
             pil_image = image_transforms(pil_image)
