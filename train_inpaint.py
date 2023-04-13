@@ -570,11 +570,9 @@ def train(args):
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
-                # Convert mask to latent space
-                mask = vae.encode(
-                    batch["masks"].reshape(batch["images"].shape).to(dtype=weight_dtype)
-                ).latent_dist.sample()
-                masked_latents = masked_latents * 0.18215
+                mask = batch["masks"]
+                # resize the mask to latents shape as we concatenate the mask to the latents
+                mask = torch.nn.functional.interpolate(mask.unsqueeze(0), size=(512 // 8, 512 // 8))
 
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)
