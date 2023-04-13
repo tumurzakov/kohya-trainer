@@ -576,6 +576,7 @@ def train(args):
                     torch.nn.functional.interpolate(mask, size=(mask.shape[2] // 8, mask.shape[3] // 8))
                     for mask in masks
                 ])
+                masks = masks.reshape(-1, 1, mask.shape[2] // 8, mask.shape[3] // 8)
 
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)

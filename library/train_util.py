@@ -1009,7 +1009,7 @@ class BaseDataset(torch.utils.data.Dataset):
             pil_image = Image.open(image_info.absolute_path)
             if not pil_image.mode == "RGB":
                 pil_image = pil_image.convert("RGB")
-            pil_images.append(pil_img)
+            pil_images.append(pil_image)
 
             latents_list.append(latents)
 
@@ -3350,7 +3350,7 @@ class collater_inpaint_class:
 
             mask = mask.to(memory_format=torch.contiguous_format).float()
 
-            maks.append(mask)
+            masks.append(mask)
             masked_images.append(masked_image)
 
         masked_images = torch.stack(masked_images)
