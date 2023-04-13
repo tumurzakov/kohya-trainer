@@ -3347,9 +3347,9 @@ class collater_inpaint_class:
         masks = torch.stack([mask])
         masked_images = torch.stack([masked_image])
 
-        example["pixel_values"] = pixel_values
-        example["masks"] = masks
-        example["masked_images"] = masked_images
+        example["pixel_values"] = example["images"]
+        example["masks"] = mask
+        example["masked_images"] = masked_image
 
         return example
 
