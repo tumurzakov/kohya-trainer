@@ -1048,7 +1048,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
         pil_images = torch.stack([pil_image])
         pil_images = pil_images.to(memory_format=torch.contiguous_format).float()
-        example["PIL_images"] = pil_images
+        example["PIL_images"] = self.image_transforms(pil_images)
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
