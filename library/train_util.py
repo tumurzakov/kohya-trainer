@@ -3350,8 +3350,7 @@ class collater_inpaint_class:
         # prepare mask and masked image
         mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
-        mask = tensor_transforms(mask)
-        pil_image = image_transforms(masked_image)
+        masked_image = tensor_transforms(masked_image)
 
         masks = torch.stack([mask])
         masks = masks.to(memory_format=torch.contiguous_format).float()
