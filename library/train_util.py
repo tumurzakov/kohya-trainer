@@ -955,7 +955,7 @@ class BaseDataset(torch.utils.data.Dataset):
         input_ids_list = []
         latents_list = []
         images = []
-        pil_image = None
+        pil_images = []
 
         for image_key in bucket[image_index : image_index + bucket_batch_size]:
             image_info = self.image_data[image_key]
@@ -1005,6 +1005,8 @@ class BaseDataset(torch.utils.data.Dataset):
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
 
             images.append(image)
+            pil_images.append(img)
+
             latents_list.append(latents)
 
             caption = self.process_caption(subset, image_info.caption)
@@ -1041,12 +1043,7 @@ class BaseDataset(torch.utils.data.Dataset):
         else:
             images = None
         example["images"] = images
-
-        pil_image = Image.open(image_info.absolute_path)
-        if not pil_image.mode == "RGB":
-            instance_image = pil_image.convert("RGB")
-
-        example["PIL_images"] = pil_image
+        example["PIL_images"] = pil_images
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
@@ -3332,23 +3329,30 @@ class collater_inpaint_class:
 
         input_ids = [example["input_ids"]]
 
-        pil_image = example["PIL_images"]
-        # generate a random mask
-        mask = random_mask(pil_image.size, 1, False)
+        pil_images = example["PIL_images"]
 
-        # apply transforms
-        mask = image_transforms(mask)
-        pil_image = image_transforms(pil_image)
+        masks = []
+        masked_images = []
+        for pil_image in pil_images:
+            # generate a random mask
+            mask = random_mask(pil_image.size, 1, False)
 
-        # prepare mask and masked image
-        mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
+            # apply transforms
+            mask = image_transforms(mask)
+            pil_image = image_transforms(pil_image)
 
-        mask = mask.to(memory_format=torch.contiguous_format).float()
+            # prepare mask and masked image
+            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
-        masked_images = torch.stack([masked_image])
+            mask = mask.to(memory_format=torch.contiguous_format).float()
+
+            maks.append(mask)
+            masked_images.append(masked_image)
+
+        masked_images = torch.stack(masked_images)
         masked_images = masked_images.to(memory_format=torch.contiguous_format).float()
 
-        example["masks"] = mask
+        example["masks"] = masks
         example["masked_images"] = masked_images
 
         return example

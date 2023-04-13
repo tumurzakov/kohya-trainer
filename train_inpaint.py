@@ -566,13 +566,16 @@ def train(args):
 
                 # Convert masked images to latent space
                 masked_latents = vae.encode(
-                    batch["masked_images"].reshape(batch["images"].shape).to(dtype=weight_dtype)
+                    batch["masked_images"].to(dtype=weight_dtype)
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
-                mask = batch["masks"]
+                masks = batch["masks"]
                 # resize the mask to latents shape as we concatenate the mask to the latents
-                mask = torch.nn.functional.interpolate(mask, size=(mask.shape[2] // 8, mask.shape[3] // 8))
+                masks = torch.stack([
+                    torch.nn.functional.interpolate(mask, size=(mask.shape[2] // 8, mask.shape[3] // 8))
+                    for mask in masks
+                ])
 
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)
@@ -588,7 +591,7 @@ def train(args):
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
 
                 # concatenate the noised latents with the mask and the masked latents
-                latent_model_input = torch.cat([noisy_latents, mask, masked_latents], dim=1)
+                latent_model_input = torch.cat([noisy_latents, masks, masked_latents], dim=1)
 
                 # Predict the noise residual
                 with accelerator.autocast():
