@@ -17,7 +17,7 @@ from diffusers import DDPMScheduler
 
 import library.train_util as train_util
 from library.train_util import (
-    DreamBoothDataset,
+    DreamBoothInpaintDataset,
 )
 import library.config_util as config_util
 from library.config_util import (
@@ -383,7 +383,7 @@ def train(args):
         dataset_dirs_info = {}  # merge subset dirs for metadata editor
 
         for dataset in train_dataset_group.datasets:
-            is_dreambooth_dataset = isinstance(dataset, DreamBoothDataset)
+            is_dreambooth_dataset = isinstance(dataset, DreamBoothInpaintDataset)
             dataset_metadata = {
                 "is_dreambooth": is_dreambooth_dataset,
                 "batch_size_per_device": dataset.batch_size,
