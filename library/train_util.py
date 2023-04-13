@@ -3327,6 +3327,11 @@ class collater_inpaint_class:
             [
                 transforms.Resize(resolution, interpolation=transforms.InterpolationMode.BILINEAR),
                 transforms.RandomCrop(resolution),
+            ]
+        )
+
+        tensor_transforms = transforms.Compose(
+            [
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]
@@ -3337,11 +3342,16 @@ class collater_inpaint_class:
         pil_image = example["PIL_images"]
         # generate a random mask
         mask = random_mask(pil_image.size, 1, False)
+
         # apply transforms
         mask = image_transforms(mask)
         pil_image = image_transforms(pil_image)
+
         # prepare mask and masked image
         mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
+
+        mask = tensor_transforms(mask)
+        pil_image = image_transforms(masked_image)
 
         masks = torch.stack([mask])
         masks = masks.to(memory_format=torch.contiguous_format).float()
