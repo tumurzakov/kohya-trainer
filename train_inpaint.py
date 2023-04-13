@@ -572,7 +572,12 @@ def train(args):
 
                 mask = batch["masks"]
                 # resize the mask to latents shape as we concatenate the mask to the latents
-                mask = mask.reshape(-1, 1, args.resolution // 8, args.resolution // 8)
+                mask = torch.stack(
+                    [
+                        torch.nn.functional.interpolate(mask, size=(args.resolution.width // 8, args.resolution.height // 8))
+                    ]
+                )
+                mask = mask.reshape(-1, 1, args.resolution.width // 8, args.resolution.height // 8)
 
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)
