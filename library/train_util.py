@@ -959,7 +959,7 @@ class BaseDataset(torch.utils.data.Dataset):
             example["captions"] = captions
         return example
 
-class DreamBoothInpaintDataset(Dataset):
+class DreamBoothInpaintDataset(BaseDataset):
     """
     A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
     It pre-processes the images and the tokenizes prompts.
