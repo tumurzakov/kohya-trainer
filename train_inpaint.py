@@ -566,7 +566,7 @@ def train(args):
 
                 # Convert masked images to latent space
                 masked_latents = vae.encode(
-                    batch["masked_images"].to(dtype=weight_dtype)
+                    torch.squeeze(batch["masked_images"]).to(dtype=weight_dtype)
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
