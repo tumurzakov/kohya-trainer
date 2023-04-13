@@ -1078,7 +1078,7 @@ class DreamBoothInpaintDataset(DreamBoothDataset):
                          max_bucket_reso,
                          bucket_reso_steps,
                          bucket_no_upscale,
-                         prior_loss_weight
+                         prior_loss_weight,
                          debug_dataset)
 
 class DreamBoothDataset(BaseDataset):
