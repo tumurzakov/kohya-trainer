@@ -1005,7 +1005,11 @@ class BaseDataset(torch.utils.data.Dataset):
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
 
             images.append(image)
-            pil_images.append(img)
+
+            pil_image = Image.open(image_info.absolute_path)
+            if not pil_image.mode == "RGB":
+                pil_image = pil_image.convert("RGB")
+            pil_images.append(pil_img)
 
             latents_list.append(latents)
 
