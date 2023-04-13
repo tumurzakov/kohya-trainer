@@ -955,7 +955,7 @@ class BaseDataset(torch.utils.data.Dataset):
         input_ids_list = []
         latents_list = []
         images = []
-        pil_images = []
+        pil_image = None
 
         for image_key in bucket[image_index : image_index + bucket_batch_size]:
             image_info = self.image_data[image_key]
@@ -973,6 +973,7 @@ class BaseDataset(torch.utils.data.Dataset):
             else:
                 # 画像を読み込み、必要ならcropする
                 img, face_cx, face_cy, face_w, face_h = self.load_image_with_face_info(subset, image_info.absolute_path)
+                pil_image = img
                 im_h, im_w = img.shape[0:2]
 
                 if self.enable_bucket:
@@ -1003,7 +1004,6 @@ class BaseDataset(torch.utils.data.Dataset):
 
                 latents = None
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
-                pil_images.append(img)
 
             images.append(image)
             latents_list.append(latents)
@@ -1042,7 +1042,7 @@ class BaseDataset(torch.utils.data.Dataset):
         else:
             images = None
         example["images"] = images
-        example["PIL_images"] = pil_images[0]
+        example["PIL_images"] = pil_image
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
