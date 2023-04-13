@@ -347,7 +347,7 @@ class DreamBoothSubset(BaseSubset):
             return NotImplemented
         return self.image_dir == other.image_dir
 
-class DreamBoothInpaintSubset(BaseSubset):
+class DreamBoothInpaintSubset(DreamBoothSubset):
     def __init__(
         self,
         image_dir: str,
