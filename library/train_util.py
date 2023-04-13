@@ -973,7 +973,6 @@ class BaseDataset(torch.utils.data.Dataset):
             else:
                 # 画像を読み込み、必要ならcropする
                 img, face_cx, face_cy, face_w, face_h = self.load_image_with_face_info(subset, image_info.absolute_path)
-                pil_image = img
                 im_h, im_w = img.shape[0:2]
 
                 if self.enable_bucket:
@@ -1004,6 +1003,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
                 latents = None
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
+                pil_image = img
 
             images.append(image)
             latents_list.append(latents)
@@ -3320,7 +3320,7 @@ class collater_inpaint_class:
         for example in examples:
             pil_image = example["PIL_images"]
             # generate a random mask
-            mask = random_mask(pil_image.size, 1, False)
+            mask = random_mask(pil_image.shape[0:2], 1, False)
             # apply transforms
             mask = image_transforms(mask)
             pil_image = image_transforms(pil_image)
