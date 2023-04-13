@@ -3301,9 +3301,10 @@ class collater_class:
         return examples[0]
 
 class collater_inpaint_class:
-    def __init__(self, epoch, step, dataset):
+    def __init__(self, epoch, step, resolution, dataset):
         self.current_epoch = epoch
         self.current_step = step
+        self.resolution = resolution
         self.dataset = dataset  # not used if worker_info is not None, in case of multiprocessing
 
     def __call__(self, examples):
@@ -3321,7 +3322,7 @@ class collater_inpaint_class:
 
         example = examples[0]
 
-        resolution = dataset.resolution
+        resolution = self.resolution
 
         image_transforms = transforms.Compose(
             [

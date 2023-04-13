@@ -118,7 +118,9 @@ def train(args):
     current_epoch = Value("i", 0)
     current_step = Value("i", 0)
     ds_for_collater = train_dataset_group if args.max_data_loader_n_workers == 0 else None
-    collater = train_util.collater_inpaint_class(current_epoch, current_step, ds_for_collater)
+    print(user_config)
+    resolution = (512, 512)
+    collater = train_util.collater_inpaint_class(current_epoch, current_step, resolution, ds_for_collater)
 
     if args.debug_dataset:
         train_util.debug_dataset(train_dataset_group)
