@@ -3347,7 +3347,7 @@ class collater_inpaint_class:
         masks = masks.to(memory_format=torch.contiguous_format).float()
 
         masked_images = torch.stack([masked_image])
-        masked_images = masked_images.memory_format=torch.contiguous_format).float()
+        masked_images = masked_images.to(memory_format=torch.contiguous_format).float()
 
         example["masks"] = masks
         example["masked_images"] = masked_images
