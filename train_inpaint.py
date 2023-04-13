@@ -575,7 +575,6 @@ def train(args):
                 mask = torch.stack(
                     [
                         torch.nn.functional.interpolate(mask, size=(args.resolution // 8, args.resolution // 8))
-                        for mask in masks
                     ]
                 )
                 mask = mask.reshape(-1, 1, args.resolution // 8, args.resolution // 8)
