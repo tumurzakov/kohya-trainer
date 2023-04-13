@@ -1046,9 +1046,7 @@ class BaseDataset(torch.utils.data.Dataset):
         if not pil_image.mode == "RGB":
             instance_image = pil_image.convert("RGB")
 
-        pil_images = torch.stack([pil_image])
-        pil_images = pil_images.to(memory_format=torch.contiguous_format).float()
-        example["PIL_images"] = self.image_transforms(pil_images)
+        example["PIL_images"] = pil_image
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
@@ -3329,6 +3327,8 @@ class collater_inpaint_class:
             [
                 transforms.Resize(resolution, interpolation=transforms.InterpolationMode.BILINEAR),
                 transforms.RandomCrop(resolution),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
             ]
         )
 
