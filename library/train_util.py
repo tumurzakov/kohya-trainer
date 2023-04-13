@@ -955,6 +955,7 @@ class BaseDataset(torch.utils.data.Dataset):
         input_ids_list = []
         latents_list = []
         images = []
+        pil_images = []
 
         for image_key in bucket[image_index : image_index + bucket_batch_size]:
             image_info = self.image_data[image_key]
@@ -1002,6 +1003,7 @@ class BaseDataset(torch.utils.data.Dataset):
 
                 latents = None
                 image = self.image_transforms(img)  # -1.0~1.0のtorch.Tensorになる
+                pil_images.append(img)
 
             images.append(image)
             latents_list.append(latents)
@@ -1040,6 +1042,7 @@ class BaseDataset(torch.utils.data.Dataset):
         else:
             images = None
         example["images"] = images
+        example["PIL_images"] = pil_images
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
@@ -3315,7 +3318,7 @@ class collater_inpaint_class:
         masks = []
         masked_images = []
         for example in examples:
-            pil_image = example["images"]
+            pil_image = example["PIL_images"]
             # generate a random mask
             mask = random_mask(pil_image.size, 1, False)
             # apply transforms
