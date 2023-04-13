@@ -3330,13 +3330,6 @@ class collater_inpaint_class:
             ]
         )
 
-        tensor_transforms = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize([0.5], [0.5]),
-            ]
-        )
-
         input_ids = [example["input_ids"]]
 
         pil_image = example["PIL_images"]
@@ -3349,8 +3342,6 @@ class collater_inpaint_class:
 
         # prepare mask and masked image
         mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
-
-        masked_image = tensor_transforms(Image.fromarray(masked_image))
 
         masks = torch.stack([mask])
         masks = masks.to(memory_format=torch.contiguous_format).float()
