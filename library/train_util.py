@@ -1045,7 +1045,10 @@ class BaseDataset(torch.utils.data.Dataset):
         pil_image = Image.open(image_info.absolute_path)
         if not pil_image.mode == "RGB":
             instance_image = pil_image.convert("RGB")
-        example["PIL_images"] = pil_image
+
+        pil_images = torch.stack([pil_image])
+        pil_images = pil_images.to(memory_format=torch.contiguous_format).float()
+        example["PIL_images"] = pil_images
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
@@ -3330,7 +3333,6 @@ class collater_inpaint_class:
         )
 
         input_ids = [example["input_ids"]]
-        pixel_values = [example["images"]]
 
         pil_image = example["PIL_images"]
         # generate a random mask
@@ -3341,13 +3343,12 @@ class collater_inpaint_class:
         # prepare mask and masked image
         mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
-        pixel_values = torch.stack(pixel_values)
-        pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
-
         masks = torch.stack([mask])
-        masked_images = torch.stack([masked_image])
+        masks = masks.to(memory_format=torch.contiguous_format).float()
 
-        example["pixel_values"] = pixel_values
+        masked_images = torch.stack([masked_image])
+        masked_images = masked_images.memory_format=torch.contiguous_format).float()
+
         example["masks"] = masks
         example["masked_images"] = masked_images
 

@@ -564,12 +564,9 @@ def train(args):
                     input_ids = batch["input_ids"].to(accelerator.device)
                     encoder_hidden_states = train_util.get_hidden_states(args, input_ids, tokenizer, text_encoder, weight_dtype)
 
-                latents = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()
-                latents = latents * 0.18215
-
                 # Convert masked images to latent space
                 masked_latents = vae.encode(
-                    batch["masked_images"].reshape(batch["pixel_values"].shape).to(dtype=weight_dtype)
+                    batch["masked_images"].reshape(batch["images"].shape).to(dtype=weight_dtype)
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
