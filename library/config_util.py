@@ -36,6 +36,7 @@ from .train_util import (
   DreamBoothDataset,
   FineTuningDataset,
   DatasetGroup,
+  DreamBoothInpaintSubset,
   DreamBoothInpaintDataset,
 )
 
@@ -444,7 +445,7 @@ def generate_inpaint_dataset_group_by_blueprint(dataset_group_blueprint: Dataset
 
   for dataset_blueprint in dataset_group_blueprint.datasets:
     if dataset_blueprint.is_dreambooth:
-      subset_klass = DreamBoothSubset
+      subset_klass = DreamBoothInpaintSubset
       dataset_klass = DreamBoothInpaintDataset
     else:
       subset_klass = FineTuningSubset
