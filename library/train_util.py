@@ -1042,7 +1042,7 @@ class BaseDataset(torch.utils.data.Dataset):
         else:
             images = None
         example["images"] = images
-        example["PIL_images"] = pil_images
+        example["PIL_images"] = pil_images[0]
 
         example["latents"] = torch.stack(latents_list) if latents_list[0] is not None else None
 
