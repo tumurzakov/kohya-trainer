@@ -388,9 +388,7 @@ class DreamBoothInpaintSubset(BaseSubset):
             token_warmup_step,
         )
 
-        self.init(
-            image_dir,
-
+        self.init(image_dir)
 
     def init(
         self,
