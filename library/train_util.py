@@ -3321,7 +3321,7 @@ class collater_inpaint_class:
 
         example = examples[0]
 
-        resolution = (512,512)
+        resolution = dataset.resolution
 
         image_transforms = transforms.Compose(
             [
