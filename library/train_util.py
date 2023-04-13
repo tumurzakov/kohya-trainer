@@ -3309,13 +3309,13 @@ class collater_inpaint_class:
                 transforms.RandomCrop(resolution),
             ]
         )
-        input_ids = [example["instance_prompt_ids"] for example in examples]
-        pixel_values = [example["instance_images"] for example in examples]
+        input_ids = [example["input_ids"] for example in examples]
+        pixel_values = [example["images"] for example in examples]
 
         masks = []
         masked_images = []
         for example in examples:
-            pil_image = example["PIL_images"]
+            pil_image = example["images"]
             # generate a random mask
             mask = random_mask(pil_image.size, 1, False)
             # apply transforms
