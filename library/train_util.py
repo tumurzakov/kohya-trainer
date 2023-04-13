@@ -3307,6 +3307,19 @@ class collater_inpaint_class:
 
     def __call__(self, examples):
 
+        worker_info = torch.utils.data.get_worker_info()
+        # worker_info is None in the main process
+        if worker_info is not None:
+            dataset = worker_info.dataset
+        else:
+            dataset = self.dataset
+
+        # set epoch and step
+        dataset.set_current_epoch(self.current_epoch.value)
+        dataset.set_current_step(self.current_step.value)
+
+        example = examples[0]
+
         resolution = (512,512)
 
         image_transforms = transforms.Compose(
@@ -3315,31 +3328,30 @@ class collater_inpaint_class:
                 transforms.RandomCrop(resolution),
             ]
         )
-        input_ids = [example["input_ids"] for example in examples]
-        pixel_values = [example["images"] for example in examples]
 
-        masks = []
-        masked_images = []
-        for example in examples:
-            pil_image = example["PIL_images"]
-            # generate a random mask
-            mask = random_mask(pil_image.size, 1, False)
-            # apply transforms
-            mask = image_transforms(mask)
-            pil_image = image_transforms(pil_image)
-            # prepare mask and masked image
-            mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
+        input_ids = [example["input_ids"]]
+        pixel_values = [example["images"]]
 
-            masks.append(mask)
-            masked_images.append(masked_image)
+        pil_image = example["PIL_images"]
+        # generate a random mask
+        mask = random_mask(pil_image.size, 1, False)
+        # apply transforms
+        mask = image_transforms(mask)
+        pil_image = image_transforms(pil_image)
+        # prepare mask and masked image
+        mask, masked_image = prepare_mask_and_masked_image(pil_image, mask)
 
         pixel_values = torch.stack(pixel_values)
         pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
 
         masks = torch.stack(masks)
         masked_images = torch.stack(masked_images)
-        batch = {"input_ids": input_ids, "pixel_values": pixel_values, "masks": masks, "masked_images": masked_images}
-        return batch
+
+        example["pixel_values"] = pixel_values
+        example["masks"] = masks
+        example["masked_images"] = masked_images
+
+        return example
 
 def prepare_mask_and_masked_image(image, mask):
     image = np.array(image.convert("RGB"))
