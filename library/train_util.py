@@ -396,7 +396,6 @@ class DreamBoothInpaintSubset(DreamBoothSubset):
         size=512,
     ):
         self.size = size
-        self.center_crop = center_crop
 
         self.instance_data_root = Path(instance_data_root)
         if not self.instance_data_root.exists():
