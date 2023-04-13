@@ -571,10 +571,8 @@ def train(args):
                 masked_latents = masked_latents * 0.18215
 
                 mask = batch["masks"]
-                print("Before", mask.shape)
                 # resize the mask to latents shape as we concatenate the mask to the latents
-                mask = torch.nn.functional.interpolate(mask, size=(512 // 8, 512 // 8))
-                print("After", mask.shape)
+                mask = torch.nn.functional.interpolate(mask, size=(mask.shape[2] // 8, mask.shape[3] // 8))
 
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)
@@ -588,9 +586,6 @@ def train(args):
                 # Add noise to the latents according to the noise magnitude at each timestep
                 # (this is the forward diffusion process)
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
-                print("noisy_latents", noisy_latents.shape)
-                print("mask", mask.shape)
-                print("masked_latents", masked_latents.shape)
 
                 # concatenate the noised latents with the mask and the masked latents
                 latent_model_input = torch.cat([noisy_latents, mask, masked_latents], dim=1)
