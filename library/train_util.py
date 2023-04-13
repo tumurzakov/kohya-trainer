@@ -1047,40 +1047,6 @@ class BaseDataset(torch.utils.data.Dataset):
             example["captions"] = captions
         return example
 
-class DreamBoothInpaintDataset(DreamBoothDataset):
-    """
-    A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
-    It pre-processes the images and the tokenizes prompts.
-    """
-
-    def __init__(
-        self,
-        subsets: Sequence[DreamBoothInpaintSubset],
-        batch_size: int,
-        tokenizer,
-        max_token_length,
-        resolution,
-        enable_bucket: bool,
-        min_bucket_reso: int,
-        max_bucket_reso: int,
-        bucket_reso_steps: int,
-        bucket_no_upscale: bool,
-        prior_loss_weight: float,
-        debug_dataset,
-    ) -> None:
-        super().__init__(subsets,
-                         batch_size,
-                         tokenizer,
-                         max_token_length,
-                         resolution,
-                         enable_bucket,
-                         min_bucket_reso,
-                         max_bucket_reso,
-                         bucket_reso_steps,
-                         bucket_no_upscale,
-                         prior_loss_weight,
-                         debug_dataset)
-
 class DreamBoothDataset(BaseDataset):
     def __init__(
         self,
@@ -3409,3 +3375,36 @@ def random_mask(im_shape, ratio=1, mask_full_image=False):
 
     return mask
 
+class DreamBoothInpaintDataset(DreamBoothDataset):
+    """
+    A dataset to prepare the instance and class images with the prompts for fine-tuning the model.
+    It pre-processes the images and the tokenizes prompts.
+    """
+
+    def __init__(
+        self,
+        subsets: Sequence[DreamBoothInpaintSubset],
+        batch_size: int,
+        tokenizer,
+        max_token_length,
+        resolution,
+        enable_bucket: bool,
+        min_bucket_reso: int,
+        max_bucket_reso: int,
+        bucket_reso_steps: int,
+        bucket_no_upscale: bool,
+        prior_loss_weight: float,
+        debug_dataset,
+    ) -> None:
+        super().__init__(subsets,
+                         batch_size,
+                         tokenizer,
+                         max_token_length,
+                         resolution,
+                         enable_bucket,
+                         min_bucket_reso,
+                         max_bucket_reso,
+                         bucket_reso_steps,
+                         bucket_no_upscale,
+                         prior_loss_weight,
+                         debug_dataset)
