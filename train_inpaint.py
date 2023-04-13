@@ -564,6 +564,25 @@ def train(args):
                     input_ids = batch["input_ids"].to(accelerator.device)
                     encoder_hidden_states = train_util.get_hidden_states(args, input_ids, tokenizer, text_encoder, weight_dtype)
 
+                latents = vae.encode(batch["pixel_values"].to(dtype=weight_dtype)).latent_dist.sample()
+                latents = latents * 0.18215
+
+                # Convert masked images to latent space
+                masked_latents = vae.encode(
+                    batch["masked_images"].reshape(batch["pixel_values"].shape).to(dtype=weight_dtype)
+                ).latent_dist.sample()
+                masked_latents = masked_latents * 0.18215
+
+                masks = batch["masks"]
+                # resize the mask to latents shape as we concatenate the mask to the latents
+                mask = torch.stack(
+                    [
+                        torch.nn.functional.interpolate(mask, size=(args.resolution // 8, args.resolution // 8))
+                        for mask in masks
+                    ]
+                )
+                mask = mask.reshape(-1, 1, args.resolution // 8, args.resolution // 8)
+
                 # Sample noise that we'll add to the latents
                 noise = torch.randn_like(latents, device=latents.device)
                 if args.noise_offset:
@@ -577,9 +596,12 @@ def train(args):
                 # (this is the forward diffusion process)
                 noisy_latents = noise_scheduler.add_noise(latents, noise, timesteps)
 
+                # concatenate the noised latents with the mask and the masked latents
+                latent_model_input = torch.cat([noisy_latents, mask, masked_latents], dim=1)
+
                 # Predict the noise residual
                 with accelerator.autocast():
-                    noise_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample
+                    noise_pred = unet(latent_model_input, timesteps, encoder_hidden_states).sample
 
                 if args.v_parameterization:
                     # v-parameterization training
