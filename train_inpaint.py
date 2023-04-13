@@ -570,7 +570,7 @@ def train(args):
                 ).latent_dist.sample()
                 masked_latents = masked_latents * 0.18215
 
-                masks = batch["masks"]
+                mask = batch["masks"]
                 # resize the mask to latents shape as we concatenate the mask to the latents
                 mask = torch.stack(
                     [
