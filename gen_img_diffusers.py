@@ -2590,7 +2590,7 @@ def main(args):
                 np_mask = np_mask[:, :, i]
                 size = np_mask.shape
             else:
-                np_mask = np.full(size, 255, dtype=np.uint8)    
+                np_mask = np.full(size, 255, dtype=np.uint8)
             mask = torch.from_numpy(np_mask.astype(np.float32) / 255.0)
             network.set_region(i, i == len(networks) - 1, mask)
         mask_images = None
@@ -3044,6 +3044,7 @@ def main(args):
             batch_data.clear()
 
     print("done!")
+    return pipe
 
 
 def setup_parser() -> argparse.ArgumentParser:
