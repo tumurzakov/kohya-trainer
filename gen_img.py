@@ -3112,6 +3112,8 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
     if not args.diffusers_xformers:
         replace_unet_modules(unet, not args.xformers, args.xformers)
 
+    use_stable_diffusion_format = os.path.isfile(args.ckpt)
+
     # tokenizerを読み込む
     print("loading tokenizer")
     if use_stable_diffusion_format:
