@@ -60,6 +60,7 @@ import math
 import os
 import random
 import re
+import copy
 
 import diffusers
 import numpy as np
@@ -3070,7 +3071,13 @@ def get_sd(args):
 
     return text_encoder, vae, unet, tokenizer
 
-def get_pipe(args, text_encoder, vae, unet, tokenizer):
+def get_pipe(args, orig_text_encoder, orig_vae, orig_unet, orig_tokenizer):
+
+    text_encoder = copy.deepcopy(orig_text_encoder)
+    vae = copy.deepcopy(orig_vae)
+    unet = copy.deepcopy(orig_unet)
+    tokenizer = copy.deepcopy(orig_tokenizer)
+
     if args.fp16:
         dtype = torch.float16
     elif args.bf16:
@@ -3174,7 +3181,7 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
             self.sampler_noises = noises
 
         def randn(self, shape, device=None, dtype=None, layout=None, generator=None):
-            print("replacing", shape, len(self.sampler_noises), self.sampler_noise_index)
+            # print("replacing", shape, len(self.sampler_noises), self.sampler_noise_index)
             if self.sampler_noises is not None and self.sampler_noise_index < len(self.sampler_noises):
                 noise = self.sampler_noises[self.sampler_noise_index]
                 if shape != noise.shape:
@@ -3262,7 +3269,7 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
 
             if args.network_weights and i < len(args.network_weights):
                 network_weight = args.network_weights[i]
-                print("load network weights from:", network_weight)
+                print("load network weights from:", network_weight, network_mul)
 
                 if model_util.is_safetensors(network_weight) and args.network_show_meta:
                     from safetensors.torch import safe_open
