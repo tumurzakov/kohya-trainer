@@ -3174,7 +3174,7 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
             self.sampler_noises = noises
 
         def randn(self, shape, device=None, dtype=None, layout=None, generator=None):
-            # print("replacing", shape, len(self.sampler_noises), self.sampler_noise_index)
+            print("replacing", shape, len(self.sampler_noises), self.sampler_noise_index)
             if self.sampler_noises is not None and self.sampler_noise_index < len(self.sampler_noises):
                 noise = self.sampler_noises[self.sampler_noise_index]
                 if shape != noise.shape:
@@ -3219,6 +3219,17 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
 
     # deviceを決定する
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # "mps"を考量してない
+
+    # noise init
+    noise_shape = (LATENT_CHANNELS, args.height // DOWNSAMPLING_FACTOR, args.width // DOWNSAMPLING_FACTOR)
+    noises = [
+        torch.zeros((1, *noise_shape), device=device, dtype=dtype)
+        for _ in range(args.steps * scheduler_num_noises_per_step)
+    ]
+    # make each noises
+    for j in range(args.steps * scheduler_num_noises_per_step):
+        noises[j][0] = torch.randn(noise_shape, device=device, dtype=dtype)
+    noise_manager.reset_sampler_noises(noises)
 
     # custom pipelineをコピったやつを生成する
     vae.to(dtype).to(device)
@@ -3334,7 +3345,6 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
         args.vgg16_guidance_layer,
     )
     pipe.set_control_nets(control_nets)
-    print("pipeline is ready.")
 
     if args.diffusers_xformers:
         pipe.enable_xformers_memory_efficient_attention()
