@@ -3087,7 +3087,7 @@ def get_pipe(args, text_encoder, vae, unet, tokenizer):
         print("v2 with clip_skip will be unexpected / v2でclip_skipを使用することは想定されていません")
 
     # VAEを読み込む
-    if args.vae is not None:
+    if args.vae is not None and type(args.vae) == str:
         vae = model_util.load_vae(args.vae, dtype)
         print("additional VAE loaded")
 
