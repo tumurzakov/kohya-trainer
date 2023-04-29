@@ -3071,6 +3071,111 @@ def get_sd(args):
 
     return text_encoder, vae, unet, tokenizer
 
+def get_scheduler(args):
+    # schedulerを用意する
+    sched_init_args = {}
+    scheduler_num_noises_per_step = 1
+    if args.sampler == "ddim":
+        scheduler_cls = DDIMScheduler
+        scheduler_module = diffusers.schedulers.scheduling_ddim
+    elif args.sampler == "ddpm":  # ddpmはおかしくなるのでoptionから外してある
+        scheduler_cls = DDPMScheduler
+        scheduler_module = diffusers.schedulers.scheduling_ddpm
+    elif args.sampler == "pndm":
+        scheduler_cls = PNDMScheduler
+        scheduler_module = diffusers.schedulers.scheduling_pndm
+    elif args.sampler == "lms" or args.sampler == "k_lms":
+        scheduler_cls = LMSDiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_lms_discrete
+    elif args.sampler == "euler" or args.sampler == "k_euler":
+        scheduler_cls = EulerDiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_euler_discrete
+    elif args.sampler == "euler_a" or args.sampler == "k_euler_a":
+        scheduler_cls = EulerAncestralDiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_euler_ancestral_discrete
+    elif args.sampler == "dpmsolver" or args.sampler == "dpmsolver++":
+        scheduler_cls = DPMSolverMultistepScheduler
+        sched_init_args["algorithm_type"] = args.sampler
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_multistep
+    elif args.sampler == "dpmsingle":
+        scheduler_cls = DPMSolverSinglestepScheduler
+        scheduler_module = diffusers.schedulers.scheduling_dpmsolver_singlestep
+    elif args.sampler == "heun":
+        scheduler_cls = HeunDiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_heun_discrete
+    elif args.sampler == "dpm_2" or args.sampler == "k_dpm_2":
+        scheduler_cls = KDPM2DiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_k_dpm_2_discrete
+    elif args.sampler == "dpm_2_a" or args.sampler == "k_dpm_2_a":
+        scheduler_cls = KDPM2AncestralDiscreteScheduler
+        scheduler_module = diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete
+        scheduler_num_noises_per_step = 2
+
+    # replace randn
+    class NoiseManager:
+        def __init__(self):
+            self.sampler_noises = None
+            self.sampler_noise_index = 0
+
+        def reset_sampler_noises(self, noises):
+            self.sampler_noise_index = 0
+            self.sampler_noises = noises
+
+        def randn(self, shape, device=None, dtype=None, layout=None, generator=None):
+            # print("replacing", shape, len(self.sampler_noises), self.sampler_noise_index)
+            if self.sampler_noises is not None and self.sampler_noise_index < len(self.sampler_noises):
+                noise = self.sampler_noises[self.sampler_noise_index]
+                if shape != noise.shape:
+                    noise = None
+            else:
+                noise = None
+
+            if noise == None:
+                print(f"unexpected noise request: {self.sampler_noise_index}, {shape}")
+                noise = torch.randn(shape, dtype=dtype, device=device, generator=generator)
+
+            self.sampler_noise_index += 1
+            return noise
+
+    class TorchRandReplacer:
+        def __init__(self, noise_manager):
+            self.noise_manager = noise_manager
+
+        def __getattr__(self, item):
+            if item == "randn":
+                return self.noise_manager.randn
+            if hasattr(torch, item):
+                return getattr(torch, item)
+            raise AttributeError("'{}' object has no attribute '{}'".format(type(self).__name__, item))
+
+    noise_manager = NoiseManager()
+    if scheduler_module is not None:
+        scheduler_module.torch = TorchRandReplacer(noise_manager)
+
+    scheduler = scheduler_cls(
+        num_train_timesteps=SCHEDULER_TIMESTEPS,
+        beta_start=SCHEDULER_LINEAR_START,
+        beta_end=SCHEDULER_LINEAR_END,
+        beta_schedule=SCHEDLER_SCHEDULE,
+        **sched_init_args,
+    )
+
+    # deviceを決定する
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # "mps"を考量してない
+
+    # noise init
+    noise_shape = (LATENT_CHANNELS, args.height // DOWNSAMPLING_FACTOR, args.width // DOWNSAMPLING_FACTOR)
+    noises = [
+        torch.zeros((1, *noise_shape), device=device, dtype=dtype)
+        for _ in range(args.steps * scheduler_num_noises_per_step)
+    ]
+    # make each noises
+    for j in range(args.steps * scheduler_num_noises_per_step):
+        noises[j][0] = torch.randn(noise_shape, device=device, dtype=dtype)
+    noise_manager.reset_sampler_noises(noises)
+
+    return sheduler
+
 def get_pipe(args, orig_text_encoder, orig_vae, orig_unet, orig_tokenizer):
 
     text_encoder = copy.deepcopy(orig_text_encoder)
