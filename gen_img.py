@@ -3327,7 +3327,7 @@ def get_pipe(args, orig_text_encoder, orig_vae, orig_unet, orig_tokenizer, orig_
     if scheduler_module is not None:
         scheduler_module.torch = TorchRandReplacer(noise_manager)
 
-    if sheduler == None:
+    if scheduler == None:
         scheduler = scheduler_cls(
             num_train_timesteps=SCHEDULER_TIMESTEPS,
             beta_start=SCHEDULER_LINEAR_START,
