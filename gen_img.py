@@ -3072,6 +3072,13 @@ def get_sd(args):
     return text_encoder, vae, unet, tokenizer
 
 def get_scheduler(args):
+    if args.fp16:
+        dtype = torch.float16
+    elif args.bf16:
+        dtype = torch.bfloat16
+    else:
+        dtype = torch.float32
+
     # schedulerを用意する
     sched_init_args = {}
     scheduler_num_noises_per_step = 1
@@ -3174,7 +3181,7 @@ def get_scheduler(args):
         noises[j][0] = torch.randn(noise_shape, device=device, dtype=dtype)
     noise_manager.reset_sampler_noises(noises)
 
-    return sheduler
+    return scheduler
 
 def get_pipe(args, orig_text_encoder, orig_vae, orig_unet, orig_tokenizer, orig_scheduler = None):
 
